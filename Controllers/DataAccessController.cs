@@ -1171,8 +1171,6 @@ ORDER BY
                                     Email = !Convert.IsDBNull(reader["Email"]) ? (string)reader["Email"] : null,
                                     Telephone = !Convert.IsDBNull(reader["Telephone"]) ? (string)reader["Telephone"] : null,
                                     Adresse = !Convert.IsDBNull(reader["Adresse"]) ? (string)reader["Adresse"] : null,
-
-
                                 });
                             }
                         }
