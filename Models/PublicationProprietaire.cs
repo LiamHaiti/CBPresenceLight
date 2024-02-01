@@ -8,6 +8,7 @@ namespace CBPresenceLight.Models
         public int PublicationProprietaireId { get; set; }
         public Nullable<int> PublicationId { get; set; }
         public Nullable<int> EntrepriseId { get; set; }
+        public Nullable<int> ProprietaireId { get; set; }
     
     }
 }

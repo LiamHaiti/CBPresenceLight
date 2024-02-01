@@ -40,10 +40,9 @@ namespace CBPresenceLight.Controllers
             _hostingEnvironment = hostingEnvironment;
         }
 
-
-        //[Route("Authenticate")]
+        //[Route("Login")]
         [HttpPost]
-        public ActionResult<object> Authenticate([FromBody] Login login)
+        public ActionResult<object> Login([FromBody] Login login)
         {
             Dictionary<string, object> dictionary = new Dictionary<string, object>();
             var response = new HttpResponseMessage();
@@ -53,9 +52,7 @@ namespace CBPresenceLight.Controllers
             }
 
             var db = new DataAccessController(_hostingEnvironment, _config);
-
             MobileUser user = db.GetMobileUser(login.Email).FirstOrDefault();
-            //m => m.Email == login.Email && m.MobileUserTypeCode.Trim().ToLower() == "opr"
             if (user == null)
             {
                 return NotFound(new { message = "Courriel ou Mot de passe incorrect" });

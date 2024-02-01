@@ -664,6 +664,7 @@ and a.CompagnieId=@CompagnieId";
                 using (SqlConnection connection = new SqlConnection(builder.ConnectionString))
                 {
                     connection.Open();
+
                     String sql = @"SELECT PublicationId
       ,Image
       ,Video
@@ -688,6 +689,7 @@ and a.CompagnieId=@CompagnieId";
    WHEN Adresse IS NOT NULL AND Adresse =@Adresse THEN 2
 	ELSE 4
 	END";
+
 
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
@@ -773,6 +775,95 @@ and a.CompagnieId=@CompagnieId";
 
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
+                        using (SqlDataReader reader = command.ExecuteReader(CommandBehavior.CloseConnection))
+                        {
+                            while (reader.Read())
+                            {
+                                data.Add(new PublicationVM
+                                {
+                                    PublicationId = (int)reader["PublicationId"],
+                                    Image = !Convert.IsDBNull(reader["Image"]) ? (string)reader["Image"] : null,
+                                    Video = !Convert.IsDBNull(reader["Video"]) ? (string)reader["Video"] : null,
+                                    DatePoste = (DateTime)reader["DatePoste"],
+                                    EntrepriseId = !Convert.IsDBNull(reader["EntrepriseId"]) ? (int?)reader["EntrepriseId"] : null,
+                                    ProprietaireId = !Convert.IsDBNull(reader["ProprietaireId"]) ? (int?)reader["ProprietaireId"] : null,
+                                    TypeEntrepriseId = !Convert.IsDBNull(reader["TypeEntrepriseId"]) ? (int?)reader["TypeEntrepriseId"] : null,
+                                    CommuneId = !Convert.IsDBNull(reader["CommuneId"]) ? (int?)reader["CommuneId"] : null,
+                                    PaysId = !Convert.IsDBNull(reader["PaysId"]) ? (int?)reader["PaysId"] : null,
+                                    Telephone = !Convert.IsDBNull(reader["Telephone"]) ? (string)reader["Telephone"] : null,
+                                    CourrierElectronique = !Convert.IsDBNull(reader["CourrierElectronique"]) ? (string)reader["CourrierElectronique"] : null,
+                                    Longitude = !Convert.IsDBNull(reader["Longitude"]) ? (string)reader["Longitude"] : null,
+                                    Latitude = !Convert.IsDBNull(reader["Latitude"]) ? (string)reader["Latitude"] : null,
+                                    Statut = !Convert.IsDBNull(reader["Statut"]) ? (bool?)reader["Statut"] : null,
+                                    Adresse = !Convert.IsDBNull(reader["Adresse"]) ? (string)reader["Adresse"] : null,
+                                    TypeEntrepriseDescription = !Convert.IsDBNull(reader["TypeEntrepriseDescription"]) ? (string)reader["TypeEntrepriseDescription"] : null,
+                                    Description = !Convert.IsDBNull(reader["Description"]) ? (string)reader["Description"] : null,
+                                    Proprietaire = !Convert.IsDBNull(reader["Proprietaire"]) ? (string)reader["Proprietaire"] : null,
+                                });
+
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SqlException e)
+            {
+                Debug.WriteLine(e.ToString());
+
+            }
+            return data;
+        }
+
+
+        public List<PublicationVM> GetPublicationVM(int? proprietaireId, int? entrepriseId)
+        {
+            //here
+            var data = new List<PublicationVM>();
+
+            try
+            {
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+
+                builder.DataSource = _dataSource;
+                builder.IntegratedSecurity = true;
+                builder.InitialCatalog = "CBPresence";
+
+                using (SqlConnection connection = new SqlConnection(builder.ConnectionString))
+                {
+                    connection.Open();
+                    String sql = @"SELECT PublicationId
+      ,Image
+      ,Video
+      ,DatePoste
+      ,EntrepriseId
+      ,ProprietaireId
+      ,TypeEntrepriseId
+      ,CommuneId
+      ,PaysId
+      ,Telephone
+      ,CourrierElectronique
+      ,Longitude
+      ,Latitude
+      ,Statut
+      ,Adresse
+      ,TypeEntrepriseDescription
+      ,Description
+      ,Proprietaire
+  FROM dbo.vwPublication";
+
+                    if (proprietaireId.HasValue)
+                    {
+                        sql += " WHERE dbo.vwPublication.ProprietaireId =@ProprietaireId";
+                    }
+                    else if (entrepriseId.HasValue)
+                    {
+                        sql += " WHERE dbo.vwPublication.EntrepriseId =@EntrepriseId";
+
+                    }
+                    using (SqlCommand command = new SqlCommand(sql, connection))
+                    {
+                        command.Parameters.AddWithValue("@ProprietaireId", proprietaireId.HasValue ? (object)proprietaireId : DBNull.Value);
+                        command.Parameters.AddWithValue("@EntrepriseId", entrepriseId.HasValue ? (object)entrepriseId : DBNull.Value);
                         using (SqlDataReader reader = command.ExecuteReader(CommandBehavior.CloseConnection))
                         {
                             while (reader.Read())
@@ -1188,7 +1279,7 @@ ORDER BY
         }
 
 
-        
+
         public Entreprise GetEntreprise(int entrepriseId)
         {
 
@@ -1225,7 +1316,7 @@ SELECT EntrepriseId
 
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
-                        command.Parameters.AddWithValue("@EntrepriseId",entrepriseId);
+                        command.Parameters.AddWithValue("@EntrepriseId", entrepriseId);
                         using (SqlDataReader reader = command.ExecuteReader(CommandBehavior.CloseConnection))
                         {
                             if (reader.Read())
@@ -1737,6 +1828,59 @@ SELECT EntrepriseId
 
 
 
+        public int InsertPublicationProprietaire(PublicationProprietaire publicationProprietaire)
+        {
+            int id = -1;
+
+            try
+            {
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+
+                builder.DataSource = _dataSource;
+                builder.IntegratedSecurity = true;
+                builder.InitialCatalog = "CBPresence";
+
+                using (SqlConnection connection = new SqlConnection(builder.ConnectionString))
+                {
+
+                    connection.Open();
+
+                    string sql = @"INSERT INTO dbo.PublicationProprietaire
+           (PublicationId
+           ,EntrepriseId
+           ,ProprietaireId
+          )
+     VALUES
+           (@PublicationId
+           ,@EntrepriseId,
+           ,@ProprietaireId,
+);SELECT SCOPE_IDENTITY()";
+                    using (SqlCommand command = new SqlCommand(sql, connection))
+                    {
+                        command.Parameters.AddWithValue("@PublicationId", (object)publicationProprietaire.PublicationId);
+                        command.Parameters.AddWithValue("@ProprietaireId", publicationProprietaire.ProprietaireId.HasValue ? (object)publicationProprietaire.ProprietaireId : DBNull.Value);
+                        command.Parameters.AddWithValue("@EntrepriseId", publicationProprietaire.EntrepriseId.HasValue ? (object)publicationProprietaire.EntrepriseId : DBNull.Value);
+
+                        var result = command.ExecuteScalar();
+                        if (result != null)
+                        {
+                            id = Convert.ToInt32(result);
+                        }
+
+                    }
+                }
+            }
+            catch (SqlException e)
+            {
+                Debug.WriteLine(e.ToString());
+            }
+
+            return id;
+
+        }
+
+
+
         //end api insert
 
 
@@ -1860,6 +2004,6 @@ SELECT EntrepriseId
     }
 
 
-        //end update api
-    }
+    //end update api
+}
 

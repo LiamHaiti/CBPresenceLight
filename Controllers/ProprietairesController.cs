@@ -42,7 +42,48 @@ namespace CBPresenceLight.Controllers
             _hostingEnvironment = hostingEnvironment;
         }
 
-        public ActionResult<object> CreateAcount([FromBody] Proprietaire proprietaire)
+        public ActionResult<object> CreateAccount([FromBody] Proprietaire proprietaire)
+        {
+            Dictionary<string, object> dictionary = new Dictionary<string, object>();
+            var response = new HttpResponseMessage();
+            if (!string.IsNullOrWhiteSpace("" + proprietaire.Nom) && !string.IsNullOrWhiteSpace(proprietaire.Prenom) && !string.IsNullOrWhiteSpace(proprietaire.Sexe) && proprietaire.DateDeNaissance.Year <= System.DateTime.Now.AddYears(-6).Year)
+            {
+                var db = new DataAccessController(_hostingEnvironment, _config);
+                string accessKey = string.Empty;
+                int resulRequest = -1;
+                accessKey = "";
+
+                do
+                {
+                    accessKey = CreateKey(16);
+                }
+                while (db.GetAccesskeys().Count(m => m.AccessKey.Equals(accessKey, StringComparison.OrdinalIgnoreCase)) > 0);
+                proprietaire.AccessKey = new Functions(_config).Encrypt(accessKey);
+                resulRequest = db.InsertProprietaire(proprietaire);
+                var userObj = new { Nom = proprietaire.Nom + " " + proprietaire.Prenom, AccessKey = new Functions(_config).Decrypt(proprietaire.AccessKey) };
+                return Ok(userObj);
+            }
+            else if (string.IsNullOrWhiteSpace(proprietaire.Nom))
+            {
+                return NotFound(new { message = "Veuillez saisir votre nom!" });
+
+            }
+            else if (string.IsNullOrWhiteSpace(proprietaire.Prenom))
+            {
+                return NotFound(new { message = "Veuillez saisir votre Prenom!" });
+            }
+            else if (string.IsNullOrWhiteSpace(proprietaire.Sexe))
+            {
+                return NotFound(new { message = "Veuillez séléctionner votre sexe!" });
+            }
+            else
+            {
+                return NotFound(new { message = "Vous devez avoir au moins 6 ans!" });
+            }
+        }
+
+        [HttpPut]
+        public ActionResult<object> UpdateAccount([FromBody] Proprietaire proprietaire)
         {
             Dictionary<string, object> dictionary = new Dictionary<string, object>();
             var response = new HttpResponseMessage();
@@ -71,22 +112,9 @@ namespace CBPresenceLight.Controllers
                     proprietaireEdit.NINU = proprietaire.NINU;
                     resulRequest = db.UpdateProprietaire(proprietaire);
                 }
-                else
-                {
-                    accessKey = "";
-
-                    do
-                    {
-                        accessKey = CreateKey(16);
-                    }
-                    while (db.GetAccesskeys().Count(m => m.AccessKey.Equals(accessKey, StringComparison.OrdinalIgnoreCase)) > 0);
-                    proprietaire.AccessKey = new Functions(_config).Encrypt(accessKey);
-                    resulRequest = db.InsertProprietaire(proprietaire);
-                }
-
+                
                 var userObj = new { Nom = proprietaire.Nom + " " + proprietaire.Prenom, AccessKey = new Functions(_config).Decrypt(proprietaire.AccessKey) };
-
-                return Ok();
+                return Ok(userObj);
             }
             else if (string.IsNullOrWhiteSpace(proprietaire.Nom))
             {
@@ -141,6 +169,38 @@ namespace CBPresenceLight.Controllers
                     Email = p.Email,
                     Telephone = p.Telephone
                 }).Take(100).ToList();
+            return Ok(proprietaires);
+
+        }
+        
+
+        public ActionResult<object> GetProprietairePublications()
+        {
+            Dictionary<string, object> dictionary = new Dictionary<string, object>();
+            var response = new HttpResponseMessage();
+            var db = new DataAccessController(_hostingEnvironment, _config);
+            var headers = Request.Headers;
+            string accessKey = string.Empty;
+            if (headers != null && headers.ContainsKey("AccessKey"))
+            {
+                headers.TryGetValue("AccessKey", out Microsoft.Extensions.Primitives.StringValues value);
+                accessKey = (string)value;
+            }
+
+            accessKey = new Functions(_config).Encrypt(accessKey);
+            var proprietaire = db.GetProprietaire(accessKey);
+            if (proprietaire == null)
+            {
+                return NotFound(new { message = "NotFound" });
+            }
+
+
+            var proprietaires = db.GetPublicationVM(proprietaire.ProprietaireId,null).Select(
+                p => new
+                {
+                    Publication = p
+                    
+                }).ToList();
             return Ok(proprietaires);
 
         }

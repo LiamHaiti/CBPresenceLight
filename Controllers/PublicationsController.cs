@@ -106,6 +106,17 @@ namespace CBPresenceLight.Controllers
                         };
 
                         resultRequest = db.InsertPublication(addPublication);
+                        if (resultRequest != -1)
+                        {
+                            PublicationProprietaire proprietaire = new PublicationProprietaire
+                            {
+                                PublicationId = resultRequest,
+                                EntrepriseId = item?.EntrepriseId,
+                                ProprietaireId = item?.ProprietaireId,
+                            };
+
+                            db.InsertPublicationProprietaire(proprietaire);
+                        }
 
                         string[] photos = item.Image.Split(",");
                         string[] videos = item.Image.Split(",");
@@ -160,14 +171,18 @@ namespace CBPresenceLight.Controllers
                 Proprietaire proprietaire = db.GetProprietaire(publication.ProprietaireId ?? 0, accessKey);
                 if (proprietaire != null)
                 {
+                    publication.StatutDelete = true;
+                    publication.DateDelete = DateTime.Now;
                     int request = db.UpdateDeletePublication(publication);
                 }
             }
             else if (publication != null && publication.EntrepriseId.HasValue)
             {
-                Entreprise entreprise = db.GetEntreprise(publication.EntrepriseId??0);
-                if (entreprise!=null)
+                Entreprise entreprise = db.GetEntreprise(publication.EntrepriseId ?? 0);
+                if (entreprise != null)
                 {
+                    publication.StatutDelete = true;
+                    publication.DateDelete = DateTime.Now;
                     int request = db.UpdateDeletePublication(publication);
 
                 }
