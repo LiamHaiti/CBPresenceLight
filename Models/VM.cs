@@ -175,6 +175,7 @@ namespace CBPresenceLight.Models
         public string Nom { get; set; }
         public string Prenom { get; set; }
         public string Sexe { get; set; }
+        public string AccessKey { get; set; }
         public Nullable<int> PaysId { get; set; }
         public string LieuDeNaissance { get; set; }
         public string Telephone { get; set; }
@@ -189,6 +190,8 @@ namespace CBPresenceLight.Models
         public string ArrondissementDescription { get; set; }
         public string DepartementDescription { get; set; }
         public bool? Statut { get; set; }
+        public DateTime? ModifierDate { get; set; }
+        public string Photo { get; set; }
     }
     
     public partial class PublicationFichierVM

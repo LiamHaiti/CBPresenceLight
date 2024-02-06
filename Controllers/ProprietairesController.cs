@@ -21,8 +21,6 @@ using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Cors;
 using CBPresenceLight.Models;
 
-
-
 namespace CBPresenceLight.Controllers
 {
     [EnableCors("AllowAll")]
@@ -41,6 +39,38 @@ namespace CBPresenceLight.Controllers
             _linkGenerator = linkGenerator;
             _hostingEnvironment = hostingEnvironment;
         }
+
+
+        //[Route("Login")]
+        [HttpPost]
+        public ActionResult<object> Login([FromBody] Login login)
+        {
+            Dictionary<string, object> dictionary = new Dictionary<string, object>();
+            var response = new HttpResponseMessage();
+            if (login == null || string.IsNullOrWhiteSpace(login.Email) || string.IsNullOrWhiteSpace(login.Password))
+            {
+                return NotFound(new { message = "Courriel ou Mot de passe incorrect" });
+            }
+
+            var db = new DataAccessController(_hostingEnvironment, _config);
+            Proprietaire user = db.GetProprietaireByEmail(login.Email).FirstOrDefault();
+            if (user == null)
+            {
+                return NotFound(new { message = "Courriel ou Mot de passe incorrect" });
+            }
+
+            if (user.Password != new Functions(_config).Encrypt(login.Password))
+            {
+                return NotFound(new { message = "Courriel ou Mot de passe incorrect" });
+            }
+
+            ProprietaireVM proprietaire = db.GetProprietaireVMByProprietaireId(user.ProprietaireId);
+
+            var userObj = new { Nom = proprietaire.Nom + " " + proprietaire.Prenom, Email = proprietaire.Email, AccessKey = new Functions(_config).Decrypt(proprietaire.AccessKey), PhotoProfil = "data:image/jpeg;base64," + proprietaire.Photo};
+            return Ok(userObj);
+        }
+
+
 
         public ActionResult<object> CreateAccount([FromBody] Proprietaire proprietaire)
         {
@@ -72,6 +102,7 @@ namespace CBPresenceLight.Controllers
             {
                 return NotFound(new { message = "Veuillez saisir votre Prenom!" });
             }
+
             else if (string.IsNullOrWhiteSpace(proprietaire.Sexe))
             {
                 return NotFound(new { message = "Veuillez séléctionner votre sexe!" });
@@ -81,6 +112,8 @@ namespace CBPresenceLight.Controllers
                 return NotFound(new { message = "Vous devez avoir au moins 6 ans!" });
             }
         }
+
+
 
         [HttpPut]
         public ActionResult<object> UpdateAccount([FromBody] Proprietaire proprietaire)

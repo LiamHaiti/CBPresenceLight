@@ -120,7 +120,6 @@ ModifieDate FROM [dbo].[User]";
             try
             {
                 SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
-
                 builder.DataSource = _dataSource;
                 builder.IntegratedSecurity = true;
                 builder.InitialCatalog = "CBPresence";
@@ -278,6 +277,54 @@ FROM [dbo].[vwUserRole] u WHERE (SELECT COUNT(*) FROM UserCompagnie uc WHERE uc.
                                 data.Add(new MobileUser
                                 {
                                     Email = !Convert.IsDBNull(reader["Email"]) ? (string)reader["Email"] : null,
+
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SqlException e)
+            {
+                Debug.WriteLine(e.ToString());
+
+            }
+
+            return data;
+
+        }
+
+        
+        public List<Proprietaire> GetProprietaireByEmail(string email)
+        {
+
+            var data = new List<Proprietaire>();
+
+            try
+            {
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+
+                builder.DataSource = _dataSource;
+                builder.IntegratedSecurity = true;
+                builder.InitialCatalog = "CBPresence";
+
+                using (SqlConnection connection = new SqlConnection(builder.ConnectionString))
+                {
+
+                    connection.Open();
+
+                    String sql = @"SELECT Email FROM [dbo].[Proprietaire] where (LOWER(Email)=LOWER(@Email) || (Telephone =@Email))";
+                    using (SqlCommand command = new SqlCommand(sql, connection))
+                    {
+                        command.Parameters.AddWithValue("@Email", email);
+                        using (SqlDataReader reader = command.ExecuteReader(CommandBehavior.CloseConnection))
+                        {
+                            while (reader.Read())
+                            {
+                                data.Add(new Proprietaire
+                                {
+                                    Email = !Convert.IsDBNull(reader["Email"]) ? (string)reader["Email"] : null,
+                                    Telephone = !Convert.IsDBNull(reader["Telephone"]) ? (string)reader["Telephone"] : null,
 
                                 });
                             }
@@ -532,8 +579,6 @@ and a.CompagnieId=@CompagnieId";
                                     AuthenticationDate = !Convert.IsDBNull(reader["AuthenticationDate"]) ? (DateTime?)reader["AuthenticationDate"] : null,
                                     ModifiePar = !Convert.IsDBNull(reader["ModifiePar"]) ? (string)reader["ModifiePar"] : null,
                                     ModifieDate = !Convert.IsDBNull(reader["ModifieDate"]) ? (DateTime?)reader["ModifieDate"] : null,
-
-
                                 });
                             }
                         }
@@ -554,13 +599,10 @@ and a.CompagnieId=@CompagnieId";
 
         public UserProfileVM GetPhotoProfile(int mobileUserId)
         {
-
             UserProfileVM data = null;
-
             try
             {
                 SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
-
                 builder.DataSource = _dataSource;
                 builder.IntegratedSecurity = true;
                 builder.InitialCatalog = "CBPresence";
@@ -1055,6 +1097,7 @@ SELECT
     [ArrondissementDescription],
     [DepartementDescription],
     [Statut]
+    [Photo]
 FROM
     [dbo].[vwProprietaire]
 ORDER BY 
@@ -1091,8 +1134,101 @@ ORDER BY
                                     DepartementDescription = !Convert.IsDBNull(reader["DepartementDescription"]) ? (string)reader["DepartementDescription"] : null,
                                     DateDeNaissance = (DateTime)reader["DateDeNaissance"],
                                     Statut = !Convert.IsDBNull(reader["Statut"]) ? (bool?)reader["Statut"] : null,
+                                    ModifierDate = !Convert.IsDBNull(reader["ModifierDate"]) ? (DateTime?)reader["ModifierDate"] : null,
+                                    Photo = !Convert.IsDBNull(reader["Photo"]) ? (string)reader["Photo"] : null,
 
                                 });
+
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SqlException e)
+            {
+                Debug.WriteLine(e.ToString());
+
+            }
+
+            return data;
+
+        }
+
+        
+
+        public ProprietaireVM GetProprietaireVMByProprietaireId(int proprietaireId)
+        {
+
+            ProprietaireVM data = new ProprietaireVM();
+
+            try
+            {
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+
+                builder.DataSource = _dataSource;
+                builder.IntegratedSecurity = true;
+                builder.InitialCatalog = "CBPresence";
+
+                using (SqlConnection connection = new SqlConnection(builder.ConnectionString))
+                {
+                    connection.Open();
+                    String sql = @"
+SELECT
+    [ProprietaireId],
+    [Nom],
+    [Prenom],
+    [Sexe],
+    [PaysId],
+    [LieuDeNaissance],
+    [Telephone],
+    [PaysDescription],
+    [Code],
+    [AccessKey],
+    [DateDeNaissance],
+    [Email],
+    [CommuneId],
+    [CommuneDescription],
+    [CodeCommune],
+    [ArrondissementId],
+    [ArrondissementDescription],
+    [DepartementDescription],
+    [Statut]
+    [Photo]
+FROM
+    [dbo].[vwProprietaire] WHERE ProprietaireId =@ProprietaireId";
+
+                    using (SqlCommand command = new SqlCommand(sql, connection))
+                    {
+                        command.Parameters.AddWithValue("@ProprietaireId", proprietaireId);
+                        using (SqlDataReader reader = command.ExecuteReader(CommandBehavior.CloseConnection))
+                        {
+                            if (reader.Read())
+                            {
+                                data =new ProprietaireVM
+                                {
+                                    ProprietaireId = (int)reader["ProprietaireId"],
+                                    PaysId = !Convert.IsDBNull(reader["PaysId"]) ? (int?)reader["PaysId"] : null,
+                                    Nom = (string)reader["Nom"],
+                                    Prenom = (string)reader["Prenom"],
+                                    Sexe = (string)reader["Sexe"],
+                                    AccessKey = (string)reader["AccessKey"],
+                                    LieuDeNaissance = !Convert.IsDBNull(reader["NINU"]) ? (string)reader["LieuDeNaissance"] : null,
+                                    CommuneId = !Convert.IsDBNull(reader["CommuneId"]) ? (int?)reader["CommuneId"] : null,
+                                    Email = !Convert.IsDBNull(reader["Email"]) ? (string)reader["Email"] : null,
+                                    Telephone = !Convert.IsDBNull(reader["Telephone"]) ? (string)reader["Telephone"] : null,
+                                    PaysDescription = !Convert.IsDBNull(reader["PaysDescription"]) ? (string)reader["PaysDescription"] : null,
+                                    Code = !Convert.IsDBNull(reader["Code"]) ? (string)reader["Code"] : null,
+                                    CommuneDescription = !Convert.IsDBNull(reader["CommuneDescription"]) ? (string)reader["CommuneDescription"] : null,
+                                    CodeCommune = !Convert.IsDBNull(reader["CodeCommune"]) ? (string)reader["CodeCommune"] : null,
+                                    ArrondissementId = !Convert.IsDBNull(reader["ArrondissementId"]) ? (int?)reader["ArrondissementId"] : null,
+                                    ArrondissementDescription = !Convert.IsDBNull(reader["ArrondissementDescription"]) ? (string)reader["ArrondissementDescription"] : null,
+                                    DepartementDescription = !Convert.IsDBNull(reader["DepartementDescription"]) ? (string)reader["DepartementDescription"] : null,
+                                    DateDeNaissance = (DateTime)reader["DateDeNaissance"],
+                                    Statut = !Convert.IsDBNull(reader["Statut"]) ? (bool?)reader["Statut"] : null,
+                                    ModifierDate = !Convert.IsDBNull(reader["ModifierDate"]) ? (DateTime?)reader["ModifierDate"] : null,
+                                    Photo = !Convert.IsDBNull(reader["Photo"]) ? (string)reader["Photo"] : null,
+
+                                };
 
                             }
                         }
