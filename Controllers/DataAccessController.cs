@@ -295,10 +295,10 @@ FROM [dbo].[vwUserRole] u WHERE (SELECT COUNT(*) FROM UserCompagnie uc WHERE uc.
         }
 
         
-        public List<Proprietaire> GetProprietaireByEmail(string email)
+        public Proprietaire GetProprietaireByEmail(string email)
         {
 
-            var data = new List<Proprietaire>();
+            Proprietaire data = null;
 
             try
             {
@@ -313,20 +313,25 @@ FROM [dbo].[vwUserRole] u WHERE (SELECT COUNT(*) FROM UserCompagnie uc WHERE uc.
 
                     connection.Open();
 
-                    String sql = @"SELECT Email FROM [dbo].[Proprietaire] where (LOWER(Email)=LOWER(@Email) || (Telephone =@Email))";
+                    String sql = @"SELECT * FROM [dbo].[Proprietaire] where (LOWER(Email)=LOWER(@Email) OR (Telephone =@Email))";
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
                         command.Parameters.AddWithValue("@Email", email);
                         using (SqlDataReader reader = command.ExecuteReader(CommandBehavior.CloseConnection))
                         {
-                            while (reader.Read())
+                            if (reader.Read())
                             {
-                                data.Add(new Proprietaire
+                                data=new Proprietaire
                                 {
+                                    ProprietaireId =(int)reader["ProprietaireId"],
                                     Email = !Convert.IsDBNull(reader["Email"]) ? (string)reader["Email"] : null,
                                     Telephone = !Convert.IsDBNull(reader["Telephone"]) ? (string)reader["Telephone"] : null,
+                                    Password = !Convert.IsDBNull(reader["Password"]) ? (string)reader["Password"] : null,
+                                    Nom = !Convert.IsDBNull(reader["Nom"]) ? (string)reader["Nom"] : null,
+                                    Prenom = !Convert.IsDBNull(reader["Prenom"]) ? (string)reader["Prenom"] : null,
+                                    AccessKey = !Convert.IsDBNull(reader["AccessKey"]) ? (string)reader["AccessKey"] : null,
 
-                                });
+                                };
                             }
                         }
                     }
@@ -1172,29 +1177,7 @@ ORDER BY
                 using (SqlConnection connection = new SqlConnection(builder.ConnectionString))
                 {
                     connection.Open();
-                    String sql = @"
-SELECT
-    [ProprietaireId],
-    [Nom],
-    [Prenom],
-    [Sexe],
-    [PaysId],
-    [LieuDeNaissance],
-    [Telephone],
-    [PaysDescription],
-    [Code],
-    [AccessKey],
-    [DateDeNaissance],
-    [Email],
-    [CommuneId],
-    [CommuneDescription],
-    [CodeCommune],
-    [ArrondissementId],
-    [ArrondissementDescription],
-    [DepartementDescription],
-    [Statut]
-    [Photo]
-FROM
+                    String sql = @"SELECT *FROM
     [dbo].[vwProprietaire] WHERE ProprietaireId =@ProprietaireId";
 
                     using (SqlCommand command = new SqlCommand(sql, connection))
@@ -1212,7 +1195,7 @@ FROM
                                     Prenom = (string)reader["Prenom"],
                                     Sexe = (string)reader["Sexe"],
                                     AccessKey = (string)reader["AccessKey"],
-                                    LieuDeNaissance = !Convert.IsDBNull(reader["NINU"]) ? (string)reader["LieuDeNaissance"] : null,
+                                    LieuDeNaissance = !Convert.IsDBNull(reader["LieuDeNaissance"]) ? (string)reader["LieuDeNaissance"] : null,
                                     CommuneId = !Convert.IsDBNull(reader["CommuneId"]) ? (int?)reader["CommuneId"] : null,
                                     Email = !Convert.IsDBNull(reader["Email"]) ? (string)reader["Email"] : null,
                                     Telephone = !Convert.IsDBNull(reader["Telephone"]) ? (string)reader["Telephone"] : null,
@@ -1225,7 +1208,6 @@ FROM
                                     DepartementDescription = !Convert.IsDBNull(reader["DepartementDescription"]) ? (string)reader["DepartementDescription"] : null,
                                     DateDeNaissance = (DateTime)reader["DateDeNaissance"],
                                     Statut = !Convert.IsDBNull(reader["Statut"]) ? (bool?)reader["Statut"] : null,
-                                    ModifierDate = !Convert.IsDBNull(reader["ModifierDate"]) ? (DateTime?)reader["ModifierDate"] : null,
                                     Photo = !Convert.IsDBNull(reader["Photo"]) ? (string)reader["Photo"] : null,
 
                                 };
@@ -1854,30 +1836,28 @@ SELECT EntrepriseId
                     string sql = @"INSERT INTO dbo.Proprietaire
            (Nom
            ,Prenom
-           ,NINU
-           ,CIN
            ,Sexe
            ,DateDeNaissance
-           ,PaysDeNaissanceId
+           ,PaysId
            ,LieuDeNaissance
            ,CommuneId
            ,AccessKey
-		   ,Password,
-		   ,PasswordAttempt,
-		   ,Email,
+		   ,Password
+		   ,PasswordAttempt
+		   ,Email
 		   ,Telephone)
      VALUES
            (@Nom
            ,@Prenom
            ,@Sexe
            ,@DateDeNaissance
-           ,@PaysDeNaissanceId
+           ,@PaysId
            ,@LieuDeNaissance
            ,@CommuneId
-           ,@AccessKey,
-		   ,@Password,
-		   ,@PasswordAttempt,
-		   ,@Email,
+           ,@AccessKey
+		   ,@Password
+		   ,@PasswordAttempt
+		   ,@Email
 		   ,@Telephone);SELECT SCOPE_IDENTITY()";
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
@@ -1885,7 +1865,7 @@ SELECT EntrepriseId
                         command.Parameters.AddWithValue("@Prenom", proprietaire.Prenom);
                         command.Parameters.AddWithValue("@Sexe", proprietaire.Sexe);
                         command.Parameters.AddWithValue("@DateDeNaissance", proprietaire.DateDeNaissance);
-                        command.Parameters.AddWithValue("@PaysDeNaissanceId", proprietaire.PaysId.HasValue ? (object)proprietaire.PaysId : DBNull.Value);
+                        command.Parameters.AddWithValue("@PaysId", proprietaire.PaysId.HasValue ? (object)proprietaire.PaysId : DBNull.Value);
                         command.Parameters.AddWithValue("@AccessKey", proprietaire.AccessKey);
                         command.Parameters.AddWithValue("@LieuDeNaissance", !string.IsNullOrWhiteSpace(proprietaire.LieuDeNaissance) ? (object)proprietaire.LieuDeNaissance : DBNull.Value);
                         command.Parameters.AddWithValue("@CommuneId", proprietaire.CommuneId.HasValue ? (object)proprietaire.CommuneId : DBNull.Value);

@@ -53,10 +53,10 @@ namespace CBPresenceLight.Controllers
             }
 
             var db = new DataAccessController(_hostingEnvironment, _config);
-            Proprietaire user = db.GetProprietaireByEmail(login.Email).FirstOrDefault();
+            Proprietaire user = db.GetProprietaireByEmail(login.Email);
             if (user == null)
             {
-                return NotFound(new { message = "Courriel ou Mot de passe incorrect" });
+                return NotFound(new { message = "Courriel ou Mot de passe incorrect"});
             }
 
             if (user.Password != new Functions(_config).Encrypt(login.Password))
@@ -66,7 +66,7 @@ namespace CBPresenceLight.Controllers
 
             ProprietaireVM proprietaire = db.GetProprietaireVMByProprietaireId(user.ProprietaireId);
 
-            var userObj = new { Nom = proprietaire.Nom + " " + proprietaire.Prenom, Email = proprietaire.Email, AccessKey = new Functions(_config).Decrypt(proprietaire.AccessKey), PhotoProfil = "data:image/jpeg;base64," + proprietaire.Photo};
+            var userObj = new { Nom = proprietaire.Nom + " " + proprietaire.Prenom, Email = proprietaire.Email, AccessKey = new Functions(_config).Decrypt(""+ proprietaire.AccessKey), PhotoProfil = "data:image/jpeg;base64," + proprietaire.Photo};
             return Ok(userObj);
         }
 
@@ -89,9 +89,19 @@ namespace CBPresenceLight.Controllers
                 }
                 while (db.GetAccesskeys().Count(m => m.AccessKey.Equals(accessKey, StringComparison.OrdinalIgnoreCase)) > 0);
                 proprietaire.AccessKey = new Functions(_config).Encrypt(accessKey);
+                proprietaire.Password = new Functions(_config).Encrypt(proprietaire.Password);
                 resulRequest = db.InsertProprietaire(proprietaire);
-                var userObj = new { Nom = proprietaire.Nom + " " + proprietaire.Prenom, AccessKey = new Functions(_config).Decrypt(proprietaire.AccessKey) };
-                return Ok(userObj);
+                if (resulRequest!=-1)
+                {
+                    var userObj = new { Nom = proprietaire.Nom + " " + proprietaire.Prenom, AccessKey = new Functions(_config).Decrypt(proprietaire.AccessKey) };
+                    return Ok(userObj);
+                }
+                else
+                {
+                    return NotFound(new { message = "Tous les champs sont requis!" });
+
+                }
+
             }
             else if (string.IsNullOrWhiteSpace(proprietaire.Nom))
             {
