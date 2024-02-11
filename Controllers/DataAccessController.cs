@@ -294,7 +294,7 @@ FROM [dbo].[vwUserRole] u WHERE (SELECT COUNT(*) FROM UserCompagnie uc WHERE uc.
 
         }
 
-        
+
         public Proprietaire GetProprietaireByEmail(string email)
         {
 
@@ -321,9 +321,9 @@ FROM [dbo].[vwUserRole] u WHERE (SELECT COUNT(*) FROM UserCompagnie uc WHERE uc.
                         {
                             if (reader.Read())
                             {
-                                data=new Proprietaire
+                                data = new Proprietaire
                                 {
-                                    ProprietaireId =(int)reader["ProprietaireId"],
+                                    ProprietaireId = (int)reader["ProprietaireId"],
                                     Email = !Convert.IsDBNull(reader["Email"]) ? (string)reader["Email"] : null,
                                     Telephone = !Convert.IsDBNull(reader["Telephone"]) ? (string)reader["Telephone"] : null,
                                     Password = !Convert.IsDBNull(reader["Password"]) ? (string)reader["Password"] : null,
@@ -801,8 +801,6 @@ and a.CompagnieId=@CompagnieId";
                 {
                     connection.Open();
                     String sql = @"SELECT PublicationId
-      ,Image
-      ,Video
       ,DatePoste
       ,EntrepriseId
       ,ProprietaireId
@@ -829,8 +827,6 @@ and a.CompagnieId=@CompagnieId";
                                 data.Add(new PublicationVM
                                 {
                                     PublicationId = (int)reader["PublicationId"],
-                                    Image = !Convert.IsDBNull(reader["Image"]) ? (string)reader["Image"] : null,
-                                    Video = !Convert.IsDBNull(reader["Video"]) ? (string)reader["Video"] : null,
                                     DatePoste = (DateTime)reader["DatePoste"],
                                     EntrepriseId = !Convert.IsDBNull(reader["EntrepriseId"]) ? (int?)reader["EntrepriseId"] : null,
                                     ProprietaireId = !Convert.IsDBNull(reader["ProprietaireId"]) ? (int?)reader["ProprietaireId"] : null,
@@ -1159,7 +1155,7 @@ ORDER BY
 
         }
 
-        
+
 
         public ProprietaireVM GetProprietaireVMByProprietaireId(int proprietaireId)
         {
@@ -1187,7 +1183,7 @@ ORDER BY
                         {
                             if (reader.Read())
                             {
-                                data =new ProprietaireVM
+                                data = new ProprietaireVM
                                 {
                                     ProprietaireId = (int)reader["ProprietaireId"],
                                     PaysId = !Convert.IsDBNull(reader["PaysId"]) ? (int?)reader["PaysId"] : null,
@@ -1947,11 +1943,9 @@ SELECT EntrepriseId
         public int InsertPublicationProprietaire(PublicationProprietaire publicationProprietaire)
         {
             int id = -1;
-
             try
             {
                 SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
-
                 builder.DataSource = _dataSource;
                 builder.IntegratedSecurity = true;
                 builder.InitialCatalog = "CBPresence";
@@ -1976,7 +1970,6 @@ SELECT EntrepriseId
                         command.Parameters.AddWithValue("@PublicationId", (object)publicationProprietaire.PublicationId);
                         command.Parameters.AddWithValue("@ProprietaireId", publicationProprietaire.ProprietaireId.HasValue ? (object)publicationProprietaire.ProprietaireId : DBNull.Value);
                         command.Parameters.AddWithValue("@EntrepriseId", publicationProprietaire.EntrepriseId.HasValue ? (object)publicationProprietaire.EntrepriseId : DBNull.Value);
-
                         var result = command.ExecuteScalar();
                         if (result != null)
                         {
@@ -1998,12 +1991,7 @@ SELECT EntrepriseId
 
 
         //end api insert
-
-
         //start update api
-
-
-
         public int UpdateProprietaire(Proprietaire proprietaire)
         {
             int id = -1;

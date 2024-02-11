@@ -32,6 +32,17 @@ namespace CBPresenceLight
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
+
+            // Configure CORS
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", builder =>
+                {
+                    builder.AllowAnyOrigin()
+                           .AllowAnyMethod()
+                           .AllowAnyHeader();
+                });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -52,7 +63,7 @@ namespace CBPresenceLight
             app.UseStaticFiles();
 
             app.UseRouting();
-            app.UseCors("AllowAll");
+            app.UseCors("AllowAll"); // Use CORS middleware
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseSession();
