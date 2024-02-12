@@ -65,10 +65,10 @@ namespace CBPresenceLight.Controllers
             PublicationList
             {
                 Publication = c,
-                PublicationFichier = db.GetPublicationFichierVM(c.PublicationId).ToList(),
-                Commentaire = db.GetCommentaireVM(c.PublicationId),
-                QuantiteCommentaire = db.GetCommentaireVM(c.PublicationId).Count(),
-                QuantiteShared = db.GetQuantitePartage(c.PublicationId),
+                //PublicationFichier = db.GetPublicationFichierVM(c.PublicationId).ToList(),
+                //Commentaire = db.GetCommentaireVM(c.PublicationId),
+               // QuantiteCommentaire = db.GetCommentaires(c.PublicationId).Count(),
+               // QuantiteShared = db.GetQuantitePartage(c.PublicationId),
                 Quantite = quantite,
                 QuantiteLiked = db.GetQuantiteLike(c.PublicationId),
                 QuantiteDisLiked = db.GetQuantiteDisLike(c.PublicationId)

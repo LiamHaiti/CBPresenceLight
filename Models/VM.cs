@@ -165,8 +165,13 @@ namespace CBPresenceLight.Models
         public string Proprietaire { get; set; }
         public bool? StatutDelete { get; set; }
         public DateTime? DateDelete { get; set; }
+        public ICollection<PublicationFichierVM> PublicationFichier { get; set; }
+        public ICollection<Commentaire> Commentaire { get; set; }
+        public int QuantiteShared { get; set; }
+        public int QuantiteCommentaire { get; set; }
+
     }
-    
+
 
     public partial class ProprietaireVM
     {

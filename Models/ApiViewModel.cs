@@ -23,13 +23,14 @@ namespace CBPresenceLight.Models
     public class PublicationList
     {
        public PublicationVM Publication { get; set; }
-        public ICollection<Commentaire> Commentaire { get; set; }
-        public ICollection<PublicationFichierVM> PublicationFichier { get; set; }
-        public int QuantiteCommentaire { get; set; }
+       // public ICollection<Commentaire> Commentaire { get; set; }
+       // public ICollection<PublicationFichierVM> PublicationFichier { get; set; }
+        //public int QuantiteCommentaire { get; set; }
         public int QuantiteShared { get; set; }
         public int Quantite { get; set; }
         public int QuantiteLiked { get; set; }
         public int QuantiteDisLiked { get; set; }
+        
     }
 
     public class EntrepriseApi

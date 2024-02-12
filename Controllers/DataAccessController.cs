@@ -842,6 +842,12 @@ and a.CompagnieId=@CompagnieId";
                                     TypeEntrepriseDescription = !Convert.IsDBNull(reader["TypeEntrepriseDescription"]) ? (string)reader["TypeEntrepriseDescription"] : null,
                                     Description = !Convert.IsDBNull(reader["Description"]) ? (string)reader["Description"] : null,
                                     Proprietaire = !Convert.IsDBNull(reader["Proprietaire"]) ? (string)reader["Proprietaire"] : null,
+                                    PublicationFichier = GetPublicationFichierVM((int)reader["PublicationId"]),
+                                    Commentaire = GetCommentaires((int)reader["PublicationId"]),
+                                    QuantiteShared = GetQuantitePartage((int)reader["PublicationId"]),
+                                    QuantiteCommentaire = GetCommentaires((int)reader["PublicationId"]).Count(),
+
+
                                 });
 
                             }
@@ -948,7 +954,7 @@ and a.CompagnieId=@CompagnieId";
 
 
 
-        public List<Commentaire> GetCommentaireVM(int publicationId)
+        public List<Commentaire> GetCommentaires(int publicationId)
         {
 
             var data = new List<Commentaire>();
@@ -1537,7 +1543,7 @@ SELECT EntrepriseId
                 using (SqlConnection connection = new SqlConnection(builder.ConnectionString))
                 {
                     connection.Open();
-                    String sql = @"SELECT Image, Video FROM vwPublicationFichierVM WHERE PublicationId =@PublicationId";
+                    String sql = @"SELECT PublicationFichierId,PublicationId,Image, Video FROM vwPublicationFile WHERE PublicationId =@PublicationId";
 
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
@@ -1548,10 +1554,11 @@ SELECT EntrepriseId
                             {
                                 data.Add(new PublicationFichierVM
                                 {
+                                    PublicationFichierId =(int)reader["PublicationFichierId"],
+                                    PublicationId =(int)reader["PublicationId"],
                                     Image = !Convert.IsDBNull(reader["Image"]) ? (string)reader["Image"] : null,
                                     Video = !Convert.IsDBNull(reader["Video"]) ? (string)reader["Video"] : null,
                                 });
-
                             }
                         }
                     }
