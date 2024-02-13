@@ -186,17 +186,20 @@ namespace CBPresenceLight.Controllers
             var db = new DataAccessController(_hostingEnvironment, _config);
             var headers = Request.Headers;
             string accessKey = string.Empty;
+            var tt = "";
             if (headers != null && headers.ContainsKey("AccessKey"))
             {
                 headers.TryGetValue("AccessKey", out Microsoft.Extensions.Primitives.StringValues value);
                 accessKey = (string)value;
+                tt = (string)value;
+                
             }
 
             accessKey = new Functions(_config).Encrypt(accessKey);
             var proprietaire = db.GetProprietaire(accessKey);
             if (proprietaire == null)
             {
-                return NotFound(new { message = "NotFound" });
+                return NotFound(new { message = tt+"<=NotFound=>"+accessKey });
             }
             var proprietaires = db.GetProprietaires().Select(
                 p => new
@@ -237,7 +240,6 @@ namespace CBPresenceLight.Controllers
                 return NotFound(new { message = "NotFound" });
             }
 
-
             var proprietaires = db.GetPublicationVM(proprietaire.ProprietaireId,null).Select(
                 p => new
                 {
@@ -247,7 +249,6 @@ namespace CBPresenceLight.Controllers
             return Ok(proprietaires);
 
         }
-
 
         public string CreateKey(int length)
         {

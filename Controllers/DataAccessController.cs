@@ -713,8 +713,6 @@ and a.CompagnieId=@CompagnieId";
                     connection.Open();
 
                     String sql = @"SELECT PublicationId
-      ,Image
-      ,Video
       ,DatePoste
       ,EntrepriseId
       ,ProprietaireId
@@ -749,8 +747,6 @@ and a.CompagnieId=@CompagnieId";
                                 data.Add(new PublicationVM
                                 {
                                     PublicationId = (int)reader["PublicationId"],
-                                    Image = !Convert.IsDBNull(reader["Image"]) ? (string)reader["Image"] : null,
-                                    Video = !Convert.IsDBNull(reader["Video"]) ? (string)reader["Video"] : null,
                                     DatePoste = (DateTime)reader["DatePoste"],
                                     EntrepriseId = !Convert.IsDBNull(reader["EntrepriseId"]) ? (int?)reader["EntrepriseId"] : null,
                                     ProprietaireId = !Convert.IsDBNull(reader["ProprietaireId"]) ? (int?)reader["ProprietaireId"] : null,
@@ -846,8 +842,8 @@ and a.CompagnieId=@CompagnieId";
                                     Commentaire = GetCommentaires((int)reader["PublicationId"]),
                                     QuantiteShared = GetQuantitePartage((int)reader["PublicationId"]),
                                     QuantiteCommentaire = GetCommentaires((int)reader["PublicationId"]).Count(),
-
-
+                                    QuantiteLiked = GetQuantiteLike((int)reader["PublicationId"]),
+                                    QuantiteDisLiked = GetQuantiteDisLike((int)reader["PublicationId"]),
                                 });
 
                             }
@@ -1494,7 +1490,7 @@ SELECT EntrepriseId
                 using (SqlConnection connection = new SqlConnection(builder.ConnectionString))
                 {
                     connection.Open();
-                    String sql = @"SELECT *FROM Pay WHERE (Statut <>0 OR Statut IS NULL)";
+                    String sql = @"SELECT *FROM Pays WHERE (Statut <>0 OR Statut IS NULL)";
 
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
@@ -1554,8 +1550,8 @@ SELECT EntrepriseId
                             {
                                 data.Add(new PublicationFichierVM
                                 {
-                                    PublicationFichierId =(int)reader["PublicationFichierId"],
-                                    PublicationId =(int)reader["PublicationId"],
+                                    PublicationFichierId = (int)reader["PublicationFichierId"],
+                                    PublicationId = (int)reader["PublicationId"],
                                     Image = !Convert.IsDBNull(reader["Image"]) ? (string)reader["Image"] : null,
                                     Video = !Convert.IsDBNull(reader["Video"]) ? (string)reader["Video"] : null,
                                 });
@@ -1867,7 +1863,7 @@ SELECT EntrepriseId
                         command.Parameters.AddWithValue("@Nom", proprietaire.Nom);
                         command.Parameters.AddWithValue("@Prenom", proprietaire.Prenom);
                         command.Parameters.AddWithValue("@Sexe", proprietaire.Sexe);
-                        command.Parameters.AddWithValue("@DateDeNaissance", proprietaire.DateDeNaissance);
+                        command.Parameters.AddWithValue("@DateDeNaissance", proprietaire.DateDeNaissance.Year > 1900 ? (object)proprietaire.DateDeNaissance : DBNull.Value);
                         command.Parameters.AddWithValue("@PaysId", proprietaire.PaysId.HasValue ? (object)proprietaire.PaysId : DBNull.Value);
                         command.Parameters.AddWithValue("@AccessKey", proprietaire.AccessKey);
                         command.Parameters.AddWithValue("@LieuDeNaissance", !string.IsNullOrWhiteSpace(proprietaire.LieuDeNaissance) ? (object)proprietaire.LieuDeNaissance : DBNull.Value);

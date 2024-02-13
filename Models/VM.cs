@@ -169,6 +169,8 @@ namespace CBPresenceLight.Models
         public ICollection<Commentaire> Commentaire { get; set; }
         public int QuantiteShared { get; set; }
         public int QuantiteCommentaire { get; set; }
+        public int QuantiteLiked { get; set; }
+        public int QuantiteDisLiked { get; set; }
 
     }
 

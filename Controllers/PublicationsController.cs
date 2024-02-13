@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -47,9 +48,9 @@ namespace CBPresenceLight.Controllers
             {
                 return NotFound(new { message = "NotFound" });
             }*/
-            var pay = db.GetPays().FirstOrDefault(p => (p.Description + "Haiti").Trim().ToLower() == (pays + "").Trim().ToLower());
+            var pay = db.GetPays().FirstOrDefault(p => (p.Description + "Haiti").Trim().ToLower() == (""+pays).Trim().ToLower());
 
-            int quantite = db.GetPublicationVM(pay != null ? pay.PaysId : 0, adresse).Distinct().Count();
+            int quantite = db.GetPublicationVM(pay != null ? pay.PaysId : 0, ""+adresse).Distinct().Count();
             double latit = 0D;
             double longit = 0D;
             if (!string.IsNullOrWhiteSpace(latitude)) {
@@ -61,24 +62,14 @@ namespace CBPresenceLight.Controllers
             }
             
 
-            var publications = db.GetPublicationVM().Distinct().AsEnumerable().Select(c => new
-            PublicationList
-            {
-                Publication = c,
-                //PublicationFichier = db.GetPublicationFichierVM(c.PublicationId).ToList(),
-                //Commentaire = db.GetCommentaireVM(c.PublicationId),
-               // QuantiteCommentaire = db.GetCommentaires(c.PublicationId).Count(),
-               // QuantiteShared = db.GetQuantitePartage(c.PublicationId),
-                Quantite = quantite,
-                QuantiteLiked = db.GetQuantiteLike(c.PublicationId),
-                QuantiteDisLiked = db.GetQuantiteDisLike(c.PublicationId)
-
-            }).OrderBy(c => c.Publication.DatePoste).OrderBy(c => new Functions(_config).Distance(c.Publication.Latitude!=null?double.Parse(c.Publication.Latitude):0D, latit, c.Publication.Longitude != null ? double.Parse( c.Publication.Longitude) :0, longit)).ThenBy(c => (""+c.Publication.Adresse).Trim().ToLower() == (""+adresse).Trim().ToLower()).OrderBy(c => c.Publication.CommuneId).ToList();
+            var publications = db.GetPublicationVM().Distinct().AsEnumerable().OrderBy(c => c.DatePoste).OrderBy(c => new Functions(_config).Distance(c.Latitude!=null?double.Parse(c.Latitude):0D, latit, c.Longitude != null ? double.Parse( c.Longitude) :0, longit)).ThenBy(c => (""+c.Adresse).Trim().ToLower() == (""+adresse).Trim().ToLower()).OrderBy(c => c.CommuneId).ToList();
 
             if (publications.Count() == 0)
             {
                 return NotFound(new { message = "Il y a toujours une nouvelle chose à voir !" });
             }
+            
+            
             return Ok(publications);
 
         }
