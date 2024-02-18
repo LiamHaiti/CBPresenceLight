@@ -203,7 +203,6 @@ namespace CBPresenceLight.Models
     
     public partial class PublicationFichierVM
     {
-
         public int PublicationFichierId { get; set; }
         public int PublicationId { get; set; }
         public string Image { get; set; }

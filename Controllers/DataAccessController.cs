@@ -695,7 +695,7 @@ and a.CompagnieId=@CompagnieId";
 
 
 
-        public List<PublicationVM> GetPublicationVM(int paysId, string adresse)
+        public List<PublicationVM> GetPublicationVM(int? paysId, int? typeEntrepriseId, string adresse)
         {
 
             var data = new List<PublicationVM>();
@@ -728,18 +728,31 @@ and a.CompagnieId=@CompagnieId";
       ,TypeEntrepriseDescription
       ,Description
       ,Proprietaire
-  FROM dbo.vwPublication WHERE Statut IS NULL ORDER BY DatePoste, 
+  FROM dbo.vwPublication ";
+                    if (paysId.HasValue && typeEntrepriseId.HasValue && !string.IsNullOrWhiteSpace(adresse))
+                    {
+                        sql += @" WHERE Statut IS NULL AND TypeEntrepriseId =@TypeEntrepriseId  ORDER BY DatePoste, 
   CASE
-   WHEN PaysId IS NOT NULL AND PaysId=@PaysId THEN 1 
-   WHEN Adresse IS NOT NULL AND Adresse =@Adresse THEN 2
-	ELSE 4
-	END";
+   WHEN PaysId IS NOT NULL AND PaysId = @PaysId THEN 1
+   WHEN Adresse IS NOT NULL AND Adresse = @Adresse THEN 2
+    ELSE 4
+    END ";
+                    }else if (!typeEntrepriseId.HasValue)
+                    {
+                        sql += @" WHERE Statut IS NULL  ORDER BY DatePoste, 
+  CASE
+   WHEN PaysId IS NOT NULL AND PaysId = @PaysId THEN 1
+   WHEN Adresse IS NOT NULL AND Adresse = @Adresse THEN 2
+    ELSE 4
+    END ";
+                    }
 
 
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
-                        command.Parameters.AddWithValue("@PaysId", paysId);
-                        command.Parameters.AddWithValue("@Adresse", adresse);
+                        command.Parameters.AddWithValue("@PaysId", paysId.HasValue?(object)paysId:DBNull.Value);
+                        command.Parameters.AddWithValue("@Adresse", !string.IsNullOrWhiteSpace(adresse)?(object)adresse :DBNull.Value);
+                        command.Parameters.AddWithValue("@TypeEntrepriseId", typeEntrepriseId.HasValue ?(object)typeEntrepriseId : DBNull.Value);
                         using (SqlDataReader reader = command.ExecuteReader(CommandBehavior.CloseConnection))
                         {
                             while (reader.Read())
@@ -780,7 +793,7 @@ and a.CompagnieId=@CompagnieId";
 
 
 
-        public List<PublicationVM> GetPublicationVM()
+        public List<PublicationVM> GetPublicationVM( int ?typeEntrepriseId)
         {
 
             var data = new List<PublicationVM>();
@@ -814,8 +827,14 @@ and a.CompagnieId=@CompagnieId";
       ,Proprietaire
   FROM dbo.vwPublication";
 
+                    if (typeEntrepriseId.HasValue && typeEntrepriseId.Value>0)
+                    {
+                        sql += " WHERE TypeEntrepriseId =@TypeEntrepriseId";
+                    }
+
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
+                        command.Parameters.AddWithValue("@TypeEntrepriseId", typeEntrepriseId.HasValue ? (object)typeEntrepriseId:DBNull.Value);
                         using (SqlDataReader reader = command.ExecuteReader(CommandBehavior.CloseConnection))
                         {
                             while (reader.Read())
@@ -858,8 +877,89 @@ and a.CompagnieId=@CompagnieId";
             }
             return data;
         }
+        
+        public PublicationVM GetPublicationVMByPublicationId( int ? publicationId)
+        {
+
+            PublicationVM data =null;
+
+            try
+            {
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+
+                builder.DataSource = _dataSource;
+                builder.IntegratedSecurity = true;
+                builder.InitialCatalog = "CBPresence";
+
+                using (SqlConnection connection = new SqlConnection(builder.ConnectionString))
+                {
+                    connection.Open();
+                    String sql = @"SELECT PublicationId
+      ,DatePoste
+      ,EntrepriseId
+      ,ProprietaireId
+      ,TypeEntrepriseId
+      ,CommuneId
+      ,PaysId
+      ,Telephone
+      ,CourrierElectronique
+      ,Longitude
+      ,Latitude
+      ,Statut
+      ,Adresse
+      ,TypeEntrepriseDescription
+      ,Description
+      ,Proprietaire
+  FROM dbo.vwPublication WHERE PublicationId =@PublicationId";
 
 
+                    using (SqlCommand command = new SqlCommand(sql, connection))
+                    {
+                        command.Parameters.AddWithValue("@PublicationId", publicationId);
+                        using (SqlDataReader reader = command.ExecuteReader(CommandBehavior.CloseConnection))
+                        {
+                            while (reader.Read())
+                            {
+                                data=new PublicationVM
+                                {
+                                    PublicationId = (int)reader["PublicationId"],
+                                    DatePoste = (DateTime)reader["DatePoste"],
+                                    EntrepriseId = !Convert.IsDBNull(reader["EntrepriseId"]) ? (int?)reader["EntrepriseId"] : null,
+                                    ProprietaireId = !Convert.IsDBNull(reader["ProprietaireId"]) ? (int?)reader["ProprietaireId"] : null,
+                                    TypeEntrepriseId = !Convert.IsDBNull(reader["TypeEntrepriseId"]) ? (int?)reader["TypeEntrepriseId"] : null,
+                                    CommuneId = !Convert.IsDBNull(reader["CommuneId"]) ? (int?)reader["CommuneId"] : null,
+                                    PaysId = !Convert.IsDBNull(reader["PaysId"]) ? (int?)reader["PaysId"] : null,
+                                    Telephone = !Convert.IsDBNull(reader["Telephone"]) ? (string)reader["Telephone"] : null,
+                                    CourrierElectronique = !Convert.IsDBNull(reader["CourrierElectronique"]) ? (string)reader["CourrierElectronique"] : null,
+                                    Longitude = !Convert.IsDBNull(reader["Longitude"]) ? (string)reader["Longitude"] : null,
+                                    Latitude = !Convert.IsDBNull(reader["Latitude"]) ? (string)reader["Latitude"] : null,
+                                    Statut = !Convert.IsDBNull(reader["Statut"]) ? (bool?)reader["Statut"] : null,
+                                    Adresse = !Convert.IsDBNull(reader["Adresse"]) ? (string)reader["Adresse"] : null,
+                                    TypeEntrepriseDescription = !Convert.IsDBNull(reader["TypeEntrepriseDescription"]) ? (string)reader["TypeEntrepriseDescription"] : null,
+                                    Description = !Convert.IsDBNull(reader["Description"]) ? (string)reader["Description"] : null,
+                                    Proprietaire = !Convert.IsDBNull(reader["Proprietaire"]) ? (string)reader["Proprietaire"] : null,
+                                    PublicationFichier = GetPublicationFichierVM((int)reader["PublicationId"]),
+                                    Commentaire = GetCommentaires((int)reader["PublicationId"]),
+                                    QuantiteShared = GetQuantitePartage((int)reader["PublicationId"]),
+                                    QuantiteCommentaire = GetCommentaires((int)reader["PublicationId"]).Count(),
+                                    QuantiteLiked = GetQuantiteLike((int)reader["PublicationId"]),
+                                    QuantiteDisLiked = GetQuantiteDisLike((int)reader["PublicationId"]),
+                                };
+
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SqlException e)
+            {
+                Debug.WriteLine(e.ToString());
+
+            }
+            return data;
+        }
+
+        
         public List<PublicationVM> GetPublicationVM(int? proprietaireId, int? entrepriseId)
         {
             //here
@@ -1966,13 +2066,115 @@ SELECT EntrepriseId
      VALUES
            (@PublicationId
            ,@EntrepriseId,
-           ,@ProprietaireId,
+           ,@ProprietaireId
 );SELECT SCOPE_IDENTITY()";
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
-                        command.Parameters.AddWithValue("@PublicationId", (object)publicationProprietaire.PublicationId);
+                        command.Parameters.AddWithValue("@PublicationId",publicationProprietaire.PublicationId);
                         command.Parameters.AddWithValue("@ProprietaireId", publicationProprietaire.ProprietaireId.HasValue ? (object)publicationProprietaire.ProprietaireId : DBNull.Value);
                         command.Parameters.AddWithValue("@EntrepriseId", publicationProprietaire.EntrepriseId.HasValue ? (object)publicationProprietaire.EntrepriseId : DBNull.Value);
+                        var result = command.ExecuteScalar();
+                        if (result != null)
+                        {
+                            id = Convert.ToInt32(result);
+                        }
+
+                    }
+                }
+            }
+            catch (SqlException e)
+            {
+                Debug.WriteLine(e.ToString());
+            }
+
+            return id;
+
+        }
+        
+
+        public int InsertLikeOrDislike(LikeOrDislike likeOrDislike)
+        {
+            int id = -1;
+            try
+            {
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+                builder.DataSource = _dataSource;
+                builder.IntegratedSecurity = true;
+                builder.InitialCatalog = "CBPresence";
+
+                using (SqlConnection connection = new SqlConnection(builder.ConnectionString))
+                {
+
+                    connection.Open();
+
+                    string sql = @"INSERT INTO dbo.LikeOrDislike
+           (Statut
+           ,DateLike
+          )
+     VALUES
+           (@Statut
+           ,@DateLike
+);SELECT SCOPE_IDENTITY()";
+                    using (SqlCommand command = new SqlCommand(sql, connection))
+                    {
+                        command.Parameters.AddWithValue("@Statut", likeOrDislike.Statut);
+                        command.Parameters.AddWithValue("@DateLike", likeOrDislike.DateLike);
+                        var result = command.ExecuteScalar();
+                        if (result != null)
+                        {
+                            id = Convert.ToInt32(result);
+                        }
+
+                    }
+                }
+            }
+            catch (SqlException e)
+            {
+                Debug.WriteLine(e.ToString());
+            }
+
+            return id;
+
+        }
+
+        
+
+        public int InsertInternautLikeDislike(InternautLikeDislike internautLikeDislike)
+        {
+            int id = -1;
+            try
+            {
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+                builder.DataSource = _dataSource;
+                builder.IntegratedSecurity = true;
+                builder.InitialCatalog = "CBPresence";
+
+                using (SqlConnection connection = new SqlConnection(builder.ConnectionString))
+                {
+
+                    connection.Open();
+
+                    string sql = @"INSERT INTO dbo.InternautLikeDislike
+           (InternautId
+           ,LikeOrDislikeId
+           ,EntrepriseId
+           ,ProprietaireId
+           ,PublicationId
+          )
+     VALUES
+           (@InternautId
+           ,@LikeOrDislikeId,
+           ,@EntrepriseId
+           ,@ProprietaireId
+           ,@PublicationId
+);SELECT SCOPE_IDENTITY()";
+                    using (SqlCommand command = new SqlCommand(sql, connection))
+                    {
+                        command.Parameters.AddWithValue("@InternautId", internautLikeDislike.InternautId.HasValue? (object)internautLikeDislike.InternautId :DBNull.Value);
+                        command.Parameters.AddWithValue("@LikeOrDislikeId", internautLikeDislike.LikeOrDislikeId);
+                        command.Parameters.AddWithValue("@EntrepriseId", internautLikeDislike.EntrepriseId.HasValue ? (object)internautLikeDislike.EntrepriseId : DBNull.Value);
+                        command.Parameters.AddWithValue("@ProprietaireId", internautLikeDislike.ProprietaireId.HasValue ? (object)internautLikeDislike.ProprietaireId : DBNull.Value);
+                        command.Parameters.AddWithValue("@PublicationId", internautLikeDislike.PublicationId.HasValue ? (object)internautLikeDislike.PublicationId : DBNull.Value);
                         var result = command.ExecuteScalar();
                         if (result != null)
                         {
@@ -1993,7 +2195,7 @@ SELECT EntrepriseId
 
 
 
-        //end api insert
+        //end insert
         //start update api
         public int UpdateProprietaire(Proprietaire proprietaire)
         {

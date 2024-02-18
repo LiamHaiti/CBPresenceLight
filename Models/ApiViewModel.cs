@@ -32,7 +32,7 @@ namespace CBPresenceLight.Models
        // public int QuantiteDisLiked { get; set; }
         
     }
-
+     
     public class EntrepriseApi
     {
 
@@ -65,6 +65,19 @@ namespace CBPresenceLight.Models
         public string Video { get; set; }
     }
 
+    public class LikeOrDislikeApi
+    {
+        public int Id { get; set; }
+        public int LikeOrDislikeId { get; set; }
+        public int PublicationId { get; set; }
+        public bool Statut { get; set; }   
+    }
+
+    public class LikeOrDislikes
+    {
+        public ICollection<LikeOrDislikeApi> LikeOrDislike { get; set; }
+    }
+    
     public class Publications
     {
         public ICollection<PublicationApi> Publication { get; set; }

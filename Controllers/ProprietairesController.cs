@@ -199,7 +199,7 @@ namespace CBPresenceLight.Controllers
             var proprietaire = db.GetProprietaire(accessKey);
             if (proprietaire == null)
             {
-                return NotFound(new { message = tt+"<=NotFound=>"+accessKey });
+                return NotFound(new { message = "NotFound"});
             }
             var proprietaires = db.GetProprietaires().Select(
                 p => new

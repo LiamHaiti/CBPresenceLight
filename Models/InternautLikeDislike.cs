@@ -10,6 +10,7 @@ namespace CBPresenceLight.Models
         public int LikeOrDislikeId { get; set; }
         public Nullable<int> EntrepriseId { get; set; }
         public Nullable<int> ProprietaireId { get; set; }
+        public Nullable<int> PublicationId { get; set; }
     
     }
 }
