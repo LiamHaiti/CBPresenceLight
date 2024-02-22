@@ -1,4 +1,10 @@
-﻿<!DOCTYPE html>
+﻿@using System.Web
+@{ 
+    string input = "<script>alert('Hello');</script>";
+    string input2 = input;
+    string encodedInput = HttpUtility.HtmlEncode(input);
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -22,6 +28,7 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
+                           
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
                     </ul>

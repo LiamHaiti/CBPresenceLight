@@ -20,6 +20,7 @@ using System.Security.Principal;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Cors;
 using CBPresenceLight.Models;
+using System.Web;
 
 namespace CBPresenceLight.Controllers
 {
@@ -146,7 +147,7 @@ namespace CBPresenceLight.Controllers
                 int resulRequest = -1;
                 if (proprietaireEdit != null)
                 {
-                    proprietaireEdit.Nom = proprietaire.Nom;
+                    proprietaireEdit.Nom = HttpUtility.HtmlEncode(proprietaire.Nom);
                     proprietaireEdit.Prenom = proprietaire.Prenom;
                     proprietaireEdit.CIN = proprietaire.CIN;
                     proprietaireEdit.CommuneId = proprietaire.CommuneId;
@@ -261,6 +262,11 @@ namespace CBPresenceLight.Controllers
                 res.Append(valid[rnd.Next(valid.Length)]);
             }
             return res.ToString();
+        }
+
+        public IActionResult Account()
+        {
+            return RedirectToAction(nameof(ProprietairesController.GetProprietaires),"Proprietaires");
         }
     }
 }
