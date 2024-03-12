@@ -82,7 +82,7 @@ namespace CBPresenceLight.Controllers
                 var db = new DataAccessController(_hostingEnvironment, _config);
                 string accessKey = string.Empty;
                 int resulRequest = -1;
-                accessKey = "";
+
 
                 do
                 {
@@ -92,6 +92,7 @@ namespace CBPresenceLight.Controllers
                 proprietaire.AccessKey = new Functions(_config).Encrypt(accessKey);
                 proprietaire.Password = new Functions(_config).Encrypt(proprietaire.Password);
                 resulRequest = db.InsertProprietaire(proprietaire);
+
                 if (resulRequest!=-1)
                 {
                     var userObj = new { Nom = proprietaire.Nom + " " + proprietaire.Prenom, AccessKey = new Functions(_config).Decrypt(proprietaire.AccessKey) };
@@ -187,6 +188,7 @@ namespace CBPresenceLight.Controllers
             var db = new DataAccessController(_hostingEnvironment, _config);
             var headers = Request.Headers;
             string accessKey = string.Empty;
+
             var tt = "";
             if (headers != null && headers.ContainsKey("AccessKey"))
             {
@@ -198,6 +200,7 @@ namespace CBPresenceLight.Controllers
 
             accessKey = new Functions(_config).Encrypt(accessKey);
             var proprietaire = db.GetProprietaire(accessKey);
+
             if (proprietaire == null)
             {
                 return NotFound(new { message = "NotFound"});
@@ -228,6 +231,7 @@ namespace CBPresenceLight.Controllers
             var db = new DataAccessController(_hostingEnvironment, _config);
             var headers = Request.Headers;
             string accessKey = string.Empty;
+
             if (headers != null && headers.ContainsKey("AccessKey"))
             {
                 headers.TryGetValue("AccessKey", out Microsoft.Extensions.Primitives.StringValues value);
@@ -264,9 +268,6 @@ namespace CBPresenceLight.Controllers
             return res.ToString();
         }
 
-        public IActionResult Account()
-        {
-            return RedirectToAction(nameof(ProprietairesController.GetProprietaires),"Proprietaires");
-        }
+     
     }
 }

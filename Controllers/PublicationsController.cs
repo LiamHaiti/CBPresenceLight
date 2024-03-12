@@ -16,6 +16,7 @@ namespace CBPresenceLight.Controllers
     [EnableCors("AllowAll")]
     [Route("apiv.01/[controller]/[action]")]
     [ApiController]
+
     public class PublicationsController : ControllerBase
     {
         ///apiv.01/Publications/GetPublications
@@ -35,41 +36,60 @@ namespace CBPresenceLight.Controllers
         {
             var db = new DataAccessController(_hostingEnvironment, _config);
             string accessKey = string.Empty;
-           /* var proprietaire = db.GetProprietaire(accessKey);
-            var headers = Request.Headers;
-            if (headers != null && headers.ContainsKey("AccessKey"))
-            {
-                headers.TryGetValue("AccessKey", out Microsoft.Extensions.Primitives.StringValues value);
-                accessKey = (string)value;
-            }
-
-            accessKey = new Functions(_config).Encrypt(accessKey);
-            if (proprietaire == null)
-            {
-                return NotFound(new { message = "NotFound" });
-            }*/
-            var pay = db.GetPays().FirstOrDefault(p => (p.Description + "Haiti").Trim().ToLower() == (""+pays).Trim().ToLower());
-
-            int quantite = db.GetPublicationVM( pay?.PaysId,null, ""+adresse).Distinct().Count();
+            var pay = db.GetPays().FirstOrDefault(p => (p.Description + "Haiti").Trim().ToLower() == ("" + pays).Trim().ToLower());
+            int quantite = db.GetPublicationVM(pay?.PaysId, null, "" + adresse).Distinct().Count();
             double latit = 0D;
             double longit = 0D;
-            if (!string.IsNullOrWhiteSpace(latitude)) {
+
+            if (!string.IsNullOrWhiteSpace(latitude))
+            {
+                latit = double.Parse(latitude);
+            }
+
+            if (!string.IsNullOrWhiteSpace(longitude))
+            {
+                longit = double.Parse(longitude);
+            }
+
+
+            var publications = db.GetPublicationVM(null).Distinct().AsEnumerable().OrderBy(c => c.DatePoste).ThenBy(c => new Functions(_config).Distance(c.Latitude != null ? double.Parse(c.Latitude) : 0D, latit, c.Longitude != null ? double.Parse(c.Longitude) : 0, longit)).ThenBy(c => ("" + c.Adresse).Trim().ToLower() == ("" + adresse).Trim().ToLower()).ThenBy(c => c.CommuneId).ToList();
+
+            if (publications.Count() == 0)
+            {
+                return NotFound(new { message = "Il y a toujours une nouvelle chose à voir !" });
+            }
+
+            return Ok(publications);
+
+        }
+
+
+        [HttpGet]
+        public ActionResult<object> GetTopPublications(string latitude, string longitude, string adresse, string pays)
+        {
+            var db = new DataAccessController(_hostingEnvironment, _config);
+            string accessKey = string.Empty;
+            var pay = db.GetPays().FirstOrDefault(p => (p.Description + "Haiti").Trim().ToLower() == ("" + pays).Trim().ToLower());
+            int quantite = db.GetPublicationVM(pay?.PaysId, null, "" + adresse).Distinct().Count();
+            double latit = 0D;
+            double longit = 0D;
+            if (!string.IsNullOrWhiteSpace(latitude))
+            {
                 latit = double.Parse(latitude);
             }
             if (!string.IsNullOrWhiteSpace(longitude))
             {
                 longit = double.Parse(longitude);
             }
-            
 
-            var publications = db.GetPublicationVM(null).Distinct().AsEnumerable().OrderBy(c => c.DatePoste).ThenBy(c => new Functions(_config).Distance(c.Latitude!=null?double.Parse(c.Latitude):0D, latit, c.Longitude != null ? double.Parse( c.Longitude) :0, longit)).ThenBy(c => (""+c.Adresse).Trim().ToLower() == (""+adresse).Trim().ToLower()).ThenBy(c => c.CommuneId).ToList();
+
+            var publications = db.GetPublicationVM(null).Distinct().AsEnumerable().OrderBy(c => c.DatePoste).ThenBy(c => new Functions(_config).Distance(c.Latitude != null ? double.Parse(c.Latitude) : 0D, latit, c.Longitude != null ? double.Parse(c.Longitude) : 0, longit)).ThenBy(c => ("" + c.Adresse).Trim().ToLower() == ("" + adresse).Trim().ToLower()).ThenBy(c => c.CommuneId).ToList();
 
             if (publications.Count() == 0)
             {
                 return NotFound(new { message = "Il y a toujours une nouvelle chose à voir !" });
             }
-            
-            
+
             return Ok(publications);
 
         }
@@ -98,7 +118,8 @@ namespace CBPresenceLight.Controllers
             int quantite = db.GetPublicationVM(pay?.PaysId, null, "" + adresse).Distinct().Count();
             double latit = 0D;
             double longit = 0D;
-            if (!string.IsNullOrWhiteSpace(latitude)) {
+            if (!string.IsNullOrWhiteSpace(latitude))
+            {
                 latit = double.Parse(latitude);
             }
             if (!string.IsNullOrWhiteSpace(longitude))
@@ -106,58 +127,48 @@ namespace CBPresenceLight.Controllers
                 longit = double.Parse(longitude);
             }
 
-            var publications = new List<PublicationVM>() { db.GetPublicationVMByPublicationId(publicationId)};
+            var publications = new List<PublicationVM>() { db.GetPublicationVMByPublicationId(publicationId) };
             if (publications.Count() == 0)
             {
                 return NotFound(new { message = "Il y a toujours une nouvelle chose à voir !" });
             }
-            
-            
+
+
             return Ok(publications);
 
         }
 
-        
+
         [HttpGet]
-        public ActionResult<object> GetPublicationTypeEntrepriseId(int ?typeEntrepriseId, string latitude, string longitude, string adresse, string pays)
+        public ActionResult<object> GetPublicationTypeEntrepriseId(int? typeEntrepriseId, string latitude, string longitude, string adresse, string pays)
         {
             var db = new DataAccessController(_hostingEnvironment, _config);
             string accessKey = string.Empty;
-           /* var proprietaire = db.GetProprietaire(accessKey);
-            var headers = Request.Headers;
-            if (headers != null && headers.ContainsKey("AccessKey"))
-            {
-                headers.TryGetValue("AccessKey", out Microsoft.Extensions.Primitives.StringValues value);
-                accessKey = (string)value;
-            }
 
-            accessKey = new Functions(_config).Encrypt(accessKey);
-            if (proprietaire == null)
-            {
-                return NotFound(new { message = "NotFound" });
-            }*/
-            var pay = db.GetPays().FirstOrDefault(p => (p.Description + "Haiti").Trim().ToLower() == (""+pays).Trim().ToLower());
+            var pay = db.GetPays().FirstOrDefault(p => (p.Description + "Haiti").Trim().ToLower() == ("" + pays).Trim().ToLower());
 
-            int quantite = db.GetPublicationVM(pay?.PaysId,null, ""+adresse).Distinct().Count();
+            int quantite = db.GetPublicationVM(pay?.PaysId, null, "" + adresse).Distinct().Count();
             double latit = 0D;
             double longit = 0D;
-            if (!string.IsNullOrWhiteSpace(latitude)) {
+
+            if (!string.IsNullOrWhiteSpace(latitude))
+            {
                 latit = double.Parse(latitude);
             }
             if (!string.IsNullOrWhiteSpace(longitude))
             {
                 longit = double.Parse(longitude);
             }
-            
 
-            var publications = db.GetPublicationVM(typeEntrepriseId).Distinct().AsEnumerable().OrderBy(c => c.DatePoste).OrderBy(c => new Functions(_config).Distance(c.Latitude!=null?double.Parse(c.Latitude):0D, latit, c.Longitude != null ? double.Parse( c.Longitude) :0, longit)).ThenBy(c => (""+c.Adresse).Trim().ToLower() == (""+adresse).Trim().ToLower()).OrderBy(c => c.CommuneId).ToList();
+
+            var publications = db.GetPublicationVM(typeEntrepriseId).Distinct().AsEnumerable().OrderBy(c => c.DatePoste).OrderBy(c => new Functions(_config).Distance(c.Latitude != null ? double.Parse(c.Latitude) : 0D, latit, c.Longitude != null ? double.Parse(c.Longitude) : 0, longit)).ThenBy(c => ("" + c.Adresse).Trim().ToLower() == ("" + adresse).Trim().ToLower()).OrderBy(c => c.CommuneId).ToList();
 
             if (publications.Count() == 0)
             {
                 return NotFound(new { message = "Il y a toujours une nouvelle chose à voir !" });
             }
-            
-            
+
+
             return Ok(publications);
 
         }
@@ -298,7 +309,7 @@ namespace CBPresenceLight.Controllers
 
         }
 
-        
+
         [HttpPost]
         public ActionResult<object> CreatePublicationLikeOrDislike([FromBody] LikeOrDislikes likeOrDislike)
         {
@@ -314,7 +325,7 @@ namespace CBPresenceLight.Controllers
             }
             accessKey = new Functions(_config).Encrypt(accessKey);
             var proprietaireExist = db.GetProprietaire(accessKey);
-        
+
 
             if (likeOrDislike.LikeOrDislike != null && likeOrDislike.LikeOrDislike.Count() > 0)
             {
@@ -325,7 +336,7 @@ namespace CBPresenceLight.Controllers
                     if (item == null)
                     {
                         PublicationVM publication = db.GetPublicationVMByPublicationId(item.PublicationId);
-                        if (publication!=null)
+                        if (publication != null)
                         {
                             LikeOrDislike likeOrDislik = new LikeOrDislike
                             {
@@ -334,7 +345,7 @@ namespace CBPresenceLight.Controllers
                             };
                             resultRequest = db.InsertLikeOrDislike(likeOrDislik);
                         }
-                       
+
                         if (resultRequest != -1)
                         {
                             InternautLikeDislike internautLikeDislike = new InternautLikeDislike
@@ -347,7 +358,7 @@ namespace CBPresenceLight.Controllers
 
                             db.InsertInternautLikeDislike(internautLikeDislike);
                         }
-                       
+
                         id.Add(item.Id);
                     }
                 }

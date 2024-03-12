@@ -146,8 +146,6 @@ namespace CBPresenceLight.Models
     public partial class PublicationVM
     {
         public int PublicationId { get; set; }
-        public string Image { get; set; }
-        public string Video { get; set; }
         public System.DateTime DatePoste { get; set; }
         public Nullable<int> EntrepriseId { get; set; }
         public Nullable<int> ProprietaireId { get; set; }
@@ -156,15 +154,18 @@ namespace CBPresenceLight.Models
         public Nullable<int> PaysId { get; set; }
         public string Telephone { get; set; }
         public string CourrierElectronique { get; set; }
-        public string Longitude { get; set; }
-        public string Latitude { get; set; }
-        public bool? Statut { get; set; }
+        public Nullable<bool> Statut { get; set; }
         public string Adresse { get; set; }
         public string TypeEntrepriseDescription { get; set; }
         public string Description { get; set; }
         public string Proprietaire { get; set; }
-        public bool? StatutDelete { get; set; }
-        public DateTime? DateDelete { get; set; }
+        public string Latitude { get; set; }
+        public string Longitude { get; set; }
+        public Nullable<bool> StatutDelete { get; set; }
+        public Nullable<System.DateTime> DateDelete { get; set; }
+        public string Nom { get; set; }
+        public string Prenom { get; set; }
+        public string Photo { get; set; }
         public ICollection<PublicationFichierVM> PublicationFichier { get; set; }
         public ICollection<Commentaire> Commentaire { get; set; }
         public int QuantiteShared { get; set; }
